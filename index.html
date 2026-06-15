@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartless — Pause impulse, grow savings.</title>
+<meta name="description" content="Cartless is the no-shame iOS app against impulse buying. Log the things you walk away from, grow your savings, and stack up 100 skips. No guilt, no spreadsheets.">
+
+<!-- Open Graph / social -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cartless — Pause impulse, grow savings.">
+<meta property="og:description" content="A no-shame app against impulse buying. Log what you walk away from, grow your savings, stack up the wins.">
+<meta property="og:image" content="assets/icon.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#5B21B6">
+<link rel="icon" type="image/png" href="assets/icon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+
+<style>
+  @font-face {
+    font-family:'Inter';
+    src:url('./assets/Inter.ttf') format('truetype');
+    font-weight:100 900;
+    font-display:swap;
+  }
+
+  :root{
+    --plum:#5B21B6;
+    --plum-light:#8B5CF6;
+    --plum-glow:rgba(91,33,182,0.36);
+    --green:#0A7A55;
+    --green-light:#3DA384;
+    --green-deep:#075E41;
+    --green-glow:rgba(10,122,85,0.30);
+    --gray:#98A0A8;
+    --gray-text:#868E96;
+    --bg:#F6F5FA;
+    --hairline:#E6E4EC;
+    --empty-border:#DEDCE6;
+    --empty-text:#BBB9C6;
+    --text:#0A0A0A;
+    --muted-val:#B8B5C0;
+    --maxw:1080px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+
+  body {
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-weight:400;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* ============ atmosphere ============ */
+  .atmos { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .blob { position:absolute; border-radius:50%; filter:blur(90px); opacity:0.34; }
+  .blob-1 { width:560px; height:560px; top:-200px; right:-160px;
+    background:radial-gradient(circle at 35% 30%, var(--plum-light), var(--plum)); }
+  .blob-2 { width:520px; height:520px; bottom:-220px; left:-180px;
+    background:radial-gradient(circle at 40% 35%, var(--green-light), var(--green)); opacity:0.26; }
+  .grain { position:fixed; inset:0; z-index:1; pointer-events:none; opacity:0.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .wrap { position:relative; z-index:2; max-width:var(--maxw); margin:0 auto; padding:0 28px; }
+
+  /* ============ nav ============ */
+  nav { position:sticky; top:0; z-index:50; backdrop-filter:saturate(160%) blur(14px);
+    background:rgba(246,245,250,0.72); border-bottom:1px solid transparent; transition:border-color .3s ease; }
+  nav.scrolled { border-bottom:1px solid var(--hairline); }
+  .nav-inner { max-width:var(--maxw); margin:0 auto; padding:16px 28px;
+    display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:11px; text-decoration:none; }
+  .brand img { width:34px; height:34px; border-radius:9px; display:block; box-shadow:0 4px 14px var(--plum-glow); }
+  .brand .wm { font-size:21px; font-weight:400; color:var(--text); letter-spacing:-0.01em; }
+  .nav-cta { font-size:14px; font-weight:500; color:#fff; text-decoration:none;
+    background:var(--plum); padding:9px 18px; border-radius:100px;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease; box-shadow:0 6px 18px var(--plum-glow); }
+  .nav-cta:hover { transform:translateY(-1px); box-shadow:0 9px 24px var(--plum-glow); background:#6926cf; }
+
+  /* ============ hero ============ */
+  .hero { padding:72px 0 40px; }
+  .hero-grid { display:grid; grid-template-columns:1.05fr 0.95fr; gap:48px; align-items:center; }
+  .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:500;
+    letter-spacing:0.04em; color:var(--plum); background:rgba(91,33,182,0.07);
+    border:1px solid rgba(91,33,182,0.16); padding:7px 14px; border-radius:100px; text-transform:uppercase; }
+  .eyebrow .dot { width:6px; height:6px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 0 0 var(--green-glow); animation:pulse 2.4s infinite; }
+  @keyframes pulse {
+    0% { box-shadow:0 0 0 0 rgba(10,122,85,0.4); }
+    70% { box-shadow:0 0 0 8px rgba(10,122,85,0); }
+    100% { box-shadow:0 0 0 0 rgba(10,122,85,0); }
+  }
+  h1.hero-title { font-size:clamp(40px, 5.6vw, 64px); font-weight:300; line-height:1.04;
+    letter-spacing:-0.025em; margin:22px 0 0; }
+  h1.hero-title .accent { font-weight:500;
+    background:linear-gradient(105deg, var(--plum) 0%, var(--green) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero-sub { font-size:clamp(16px, 2vw, 18.5px); color:#3a3a42; font-weight:300;
+    margin-top:22px; max-width:30em; line-height:1.6; }
+  .hero-sub strong { font-weight:500; color:var(--text); }
+  .cta-row { display:flex; align-items:center; gap:16px; margin-top:34px; flex-wrap:wrap; }
+
+  /* App Store badge (built, not an external image) */
+  .appstore { display:inline-flex; align-items:center; gap:11px; background:var(--text); color:#fff;
+    text-decoration:none; padding:13px 22px 13px 18px; border-radius:15px;
+    transition:transform .18s ease, box-shadow .2s ease; box-shadow:0 10px 30px rgba(10,10,10,0.18); }
+  .appstore:hover { transform:translateY(-2px); box-shadow:0 16px 40px rgba(10,10,10,0.26); }
+  .appstore svg { width:26px; height:26px; }
+  .appstore .as-txt { display:flex; flex-direction:column; line-height:1.1; text-align:left; }
+  .appstore .as-small { font-size:11px; font-weight:300; opacity:0.82; }
+  .appstore .as-big { font-size:18px; font-weight:500; letter-spacing:-0.01em; }
+  .appstore.soon { position:relative; }
+  .appstore.soon::after { content:'Coming soon'; position:absolute; top:-9px; right:-8px;
+    font-size:10px; font-weight:500; letter-spacing:0.03em; background:var(--green); color:#fff;
+    padding:3px 8px; border-radius:100px; box-shadow:0 4px 12px var(--green-glow); }
+  .cta-note { font-size:13.5px; color:var(--gray-text); font-weight:300; }
+  .cta-note a { color:var(--plum); text-decoration:none; border-bottom:1px solid rgba(91,33,182,0.3); }
+
+  /* ============ phone mockup ============ */
+  .phone-stage { display:flex; justify-content:center; position:relative; }
+  .phone-stage::before { content:''; position:absolute; width:340px; height:340px; border-radius:50%;
+    background:radial-gradient(circle, var(--plum-glow), transparent 70%);
+    top:50%; left:50%; transform:translate(-50%,-50%); filter:blur(30px); z-index:0; }
+  .phone { position:relative; z-index:1; width:316px; background:var(--bg); border-radius:42px;
+    border:1px solid var(--hairline); overflow:hidden;
+    box-shadow:0 30px 80px rgba(40,20,80,0.22), 0 4px 16px rgba(0,0,0,0.06);
+    padding:46px 20px 0; transform:rotate(-1.2deg); transition:transform .5s cubic-bezier(.2,.8,.2,1); }
+  .phone:hover { transform:rotate(0deg) translateY(-4px); }
+  .statusbar { position:absolute; top:15px; left:0; right:0; display:flex; justify-content:space-between;
+    padding:0 26px; font-size:12px; font-weight:500; color:var(--text); }
+  .ptop { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .ptop .brand img { width:27px; height:27px; box-shadow:none; }
+  .ptop .wm { font-size:21px; font-weight:400; }
+  .streak { background:#fff; border:1px solid var(--hairline); border-radius:100px; padding:5px 12px;
+    font-size:12px; font-weight:500; color:var(--gray-text); display:flex; align-items:center; gap:5px; }
+  .streak svg { width:13px; height:13px; }
+  .chips { display:flex; gap:9px; margin-bottom:14px; }
+  .chip { flex:1; background:#fff; border:1px solid var(--hairline); border-radius:15px; padding:12px 13px; }
+  .chip .lbl { font-size:8.5px; font-weight:500; letter-spacing:0.5px; color:var(--gray-text); margin-bottom:5px; }
+  .chip .val { font-size:18px; font-weight:400; }
+  .chip .val .bright { color:var(--green-deep); }
+  .chip .val .bright-p { color:#454D59; }
+  .chip .val .dim { color:var(--muted-val); font-weight:400; font-size:13px; }
+  .week { display:flex; gap:5px; justify-content:space-between; margin-bottom:24px; }
+  .day { flex:1; aspect-ratio:1; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; font-size:12px; font-weight:500; max-width:36px; }
+  .day.clean { border:2px solid var(--green); color:var(--green-deep); }
+  .day.today { border:2px solid var(--gray); color:var(--gray-text); }
+  .day.empty { border:1.5px solid var(--empty-border); color:var(--empty-text); }
+  .hero-action { text-align:center; margin-bottom:14px; }
+  .orb-primary { width:132px; height:132px; border-radius:50%; margin:0 auto; display:flex;
+    align-items:center; justify-content:center;
+    background:radial-gradient(circle at 35% 28%, var(--green-light), var(--green));
+    box-shadow:0 14px 44px var(--green-glow); }
+  .orb-primary svg { width:54px; height:54px; stroke:#fff; }
+  .ha-title { font-size:16px; font-weight:500; margin-top:14px; }
+  .ha-sub { font-size:11.5px; color:var(--gray-text); margin-top:3px; }
+  .tempted-row { display:flex; justify-content:center; margin-bottom:22px; }
+  .tempted-pill { display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--hairline);
+    border-radius:100px; padding:10px 18px; }
+  .tempted-pill svg { width:17px; height:17px; stroke:var(--plum); }
+  .tempted-pill span { font-size:13px; color:var(--plum); font-weight:500; }
+  .pausecard { background:#fff; border:1px solid var(--hairline); border-radius:16px; padding:14px 15px; margin-bottom:18px; }
+  .pc-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .pc-item { font-size:13.5px; font-weight:500; }
+  .pc-time { font-size:12px; color:var(--plum); font-weight:500; }
+  .pc-btns { display:flex; gap:9px; }
+  .pc-btn { flex:1; text-align:center; padding:11px; border-radius:11px; font-size:13px; font-weight:500; }
+  .pc-btn.kept { background:#fff; border:2px solid var(--green); color:var(--green-deep); }
+  .pc-btn.bought { background:#fff; border:1px solid var(--hairline); color:var(--gray-text); }
+
+  /* ============ section scaffolding ============ */
+  section { position:relative; z-index:2; }
+  .section-pad { padding:60px 0; }
+  .kicker { font-size:12.5px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--green); margin-bottom:14px; }
+  .kicker.plum { color:var(--plum); }
+  h2 { font-size:clamp(28px, 3.8vw, 40px); font-weight:300; line-height:1.12; letter-spacing:-0.02em; }
+  h2 .em { font-weight:500; }
+  .lead { font-size:17px; color:#3a3a42; font-weight:300; max-width:34em; margin-top:16px; line-height:1.6; }
+  .center { text-align:center; }
+  .center .lead { margin-left:auto; margin-right:auto; }
+  .head-narrow { max-width:640px; margin:0 auto; }
+
+  /* core job band (oneliner echo) */
+  .corejob { text-align:center; }
+  .corejob h2 { max-width:18em; margin:0 auto; }
+  .micro-jobs { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:30px; }
+  .mj { display:inline-flex; align-items:center; gap:9px; background:#fff; border:1px solid var(--hairline);
+    border-radius:100px; padding:11px 19px; font-size:14.5px; font-weight:400; }
+  .mj svg { width:17px; height:17px; stroke-width:1.9; fill:none; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+  .mj.p svg { stroke:var(--plum); }
+  .mj.g svg { stroke:var(--green); }
+
+  /* problem / point A */
+  .problem-quote { margin:36px auto 0; max-width:680px; font-size:clamp(20px, 3vw, 27px);
+    font-weight:300; line-height:1.45; letter-spacing:-0.015em; color:var(--text); }
+  .problem-quote .hl { background:linear-gradient(180deg, transparent 62%, rgba(139,92,246,0.2) 62%); padding:0 2px; }
+  .problem-foot { margin-top:24px; font-size:15.5px; color:var(--gray-text); font-weight:300; }
+
+  /* "узнаёте себя" — point A cards */
+  .pointa-q { font-size:clamp(20px, 2.6vw, 25px); font-weight:300; color:var(--text);
+    margin-top:14px; max-width:22em; }
+  .pointa-q b { font-weight:500; }
+  .pointa-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:38px; }
+  .pa-card { background:#fff; border:1px solid var(--hairline); border-radius:18px; padding:24px 22px; }
+  .pa-card .pa-lbl { font-size:11px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--plum); margin-bottom:14px; }
+  .pa-card ul { list-style:none; display:flex; flex-direction:column; gap:11px; }
+  .pa-card li { font-size:14.5px; font-weight:300; color:#3a3a42; line-height:1.45; display:flex; gap:10px; }
+  .pa-card li::before { content:''; flex-shrink:0; width:6px; height:6px; border-radius:50%;
+    background:var(--plum-light); margin-top:8px; }
+
+  /* how it works (3 steps) */
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:48px; }
+  .step { background:#fff; border:1px solid var(--hairline); border-radius:22px; padding:30px 26px;
+    position:relative; overflow:hidden; transition:transform .3s ease, box-shadow .3s ease; }
+  .step:hover { transform:translateY(-4px); box-shadow:0 18px 44px rgba(40,20,80,0.10); }
+  .step-num { position:absolute; top:18px; right:22px; font-size:54px; font-weight:200; color:var(--hairline); line-height:1; }
+  .step-ic { width:54px; height:54px; border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+  .step-ic svg { width:27px; height:27px; stroke-width:1.8; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .ic-plum { background:rgba(91,33,182,0.09); } .ic-plum svg { stroke:var(--plum); }
+  .ic-clock { background:rgba(139,92,246,0.1); } .ic-clock svg { stroke:var(--plum-light); }
+  .ic-green { background:rgba(10,122,85,0.1); } .ic-green svg { stroke:var(--green); }
+  .step h3 { font-size:19px; font-weight:500; letter-spacing:-0.01em; margin-bottom:9px; }
+  .step p { font-size:14.5px; color:var(--gray-text); font-weight:300; line-height:1.55; }
+
+  /* what you get / showcase split */
+  .showcase { display:grid; grid-template-columns:0.92fr 1.08fr; gap:56px; align-items:center; }
+  .feat-list { list-style:none; margin-top:28px; display:flex; flex-direction:column; gap:18px; }
+  .feat-list li { display:flex; gap:14px; align-items:flex-start; }
+  .feat-check { flex-shrink:0; width:26px; height:26px; border-radius:50%;
+    background:radial-gradient(circle at 35% 28%, var(--green-light), var(--green));
+    display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px var(--green-glow); }
+  .feat-check svg { width:14px; height:14px; stroke:#fff; stroke-width:2.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .feat-list .ft { font-size:15.5px; font-weight:400; }
+  .feat-list .ft .sub { display:block; font-size:13.5px; color:var(--gray-text); font-weight:300; margin-top:2px; }
+
+  /* stat band (aha echo / point B numbers) */
+  .band { margin:0; padding:56px 0;
+    background:linear-gradient(120deg, var(--plum) 0%, #6d2bbf 45%, var(--green) 120%);
+    position:relative; overflow:hidden; }
+  .band::after { content:''; position:absolute; inset:0; opacity:0.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .band .wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:30px; }
+  .stat { text-align:center; color:#fff; position:relative; z-index:2; }
+  .stat .n { font-size:clamp(34px,5vw,52px); font-weight:300; letter-spacing:-0.02em; line-height:1; }
+  .stat .l { font-size:14px; font-weight:300; opacity:0.88; margin-top:12px; line-height:1.45; }
+  .stat .l strong { font-weight:500; }
+
+  /* point B — к чему придёте */
+  .pointb-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; margin-top:42px; }
+  .pb-col h4 { font-size:13px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--gray-text); margin-bottom:20px; }
+  .pb-list { list-style:none; display:flex; flex-direction:column; gap:16px; }
+  .pb-list li { display:flex; gap:13px; align-items:flex-start; font-size:16px; font-weight:300; color:var(--text); line-height:1.5; }
+  .pb-ic { flex-shrink:0; width:24px; height:24px; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .pb-ic svg { width:14px; height:14px; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .pb-ic.feel { background:rgba(139,92,246,0.12); } .pb-ic.feel svg { stroke:var(--plum); }
+  .pb-ic.do { background:rgba(10,122,85,0.12); } .pb-ic.do svg { stroke:var(--green); }
+
+  /* doubts / barriers */
+  .doubts-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:42px; }
+  .doubt { background:#fff; border:1px solid var(--hairline); border-radius:20px; padding:26px 24px; }
+  .doubt .q { font-size:16.5px; font-weight:500; letter-spacing:-0.01em; margin-bottom:11px; display:flex; gap:9px; align-items:flex-start; }
+  .doubt .q::before { content:'“'; font-size:34px; line-height:0.6; color:var(--plum-light); font-weight:400; margin-top:6px; }
+  .doubt .a { font-size:14.5px; color:var(--gray-text); font-weight:300; line-height:1.55; }
+  .doubt .a strong { color:var(--text); font-weight:500; }
+
+  /* why not willpower — replaces "fire competitors" */
+  .versus { display:flex; flex-direction:column; gap:14px; margin-top:40px; max-width:780px; margin-left:auto; margin-right:auto; }
+  .vrow { display:grid; grid-template-columns:1fr auto 1fr; gap:20px; align-items:center;
+    background:#fff; border:1px solid var(--hairline); border-radius:18px; padding:20px 24px; }
+  .vrow .old { text-align:right; }
+  .vrow .old .vt { font-size:15.5px; font-weight:500; color:var(--text); }
+  .vrow .old .vs { font-size:13.5px; color:var(--gray-text); font-weight:300; margin-top:3px; line-height:1.4; }
+  .vrow .arr { width:38px; height:38px; border-radius:50%; flex-shrink:0;
+    background:radial-gradient(circle at 35% 28%, var(--plum-light), var(--plum));
+    display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px var(--plum-glow); }
+  .vrow .arr svg { width:18px; height:18px; stroke:#fff; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .vrow .new .vt { font-size:15.5px; font-weight:500; color:var(--green-deep); }
+  .vrow .new .vs { font-size:13.5px; color:var(--gray-text); font-weight:300; margin-top:3px; line-height:1.4; }
+
+  /* final CTA / waitlist */
+  .final { text-align:center; padding:76px 0 64px; }
+  .final h2 { max-width:16em; margin:0 auto; }
+  .final .lead { margin:18px auto 0; }
+  .final .cta-row { justify-content:center; margin-top:36px; }
+  .email-form { margin:30px auto 0; max-width:440px; display:flex; gap:10px; }
+  .email-form input { flex:1; font-family:inherit; font-size:15px; font-weight:300; padding:14px 18px;
+    border-radius:13px; border:1px solid var(--hairline); background:#fff; color:var(--text); outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease; }
+  .email-form input:focus { border-color:var(--plum-light); box-shadow:0 0 0 4px rgba(139,92,246,0.12); }
+  .email-form button { font-family:inherit; font-size:15px; font-weight:500; color:#fff; background:var(--plum);
+    border:none; border-radius:13px; padding:14px 24px; cursor:pointer;
+    transition:transform .18s ease, background .18s ease; box-shadow:0 8px 22px var(--plum-glow); white-space:nowrap; }
+  .email-form button:hover { transform:translateY(-1px); background:#6926cf; }
+  .form-msg { margin-top:14px; font-size:14px; color:var(--green-deep); font-weight:400; min-height:20px;
+    opacity:0; transition:opacity .3s ease; }
+  .form-msg.show { opacity:1; }
+
+  /* footer */
+  footer { position:relative; z-index:2; border-top:1px solid var(--hairline); padding:36px 0 44px; }
+  .foot-inner { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .foot-brand { display:flex; align-items:center; gap:10px; }
+  .foot-brand img { width:26px; height:26px; border-radius:7px; }
+  .foot-brand span { font-size:16px; font-weight:500; }
+  .foot-links { display:flex; gap:24px; flex-wrap:wrap; }
+  .foot-links a { font-size:14px; color:var(--gray-text); font-weight:300; text-decoration:none; transition:color .18s ease; }
+  .foot-links a:hover { color:var(--plum); }
+  .foot-copy { font-size:13px; color:var(--gray-text); font-weight:300; margin-top:18px; }
+
+  /* reveal */
+  .reveal { opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+  .reveal.in { opacity:1; transform:none; }
+
+  /* ============ responsive ============ */
+  @media (max-width:860px) {
+    .hero-grid { grid-template-columns:1fr; gap:44px; text-align:center; }
+    .hero-sub { margin-left:auto; margin-right:auto; }
+    .cta-row { justify-content:center; }
+    .eyebrow { margin:0 auto; }
+    .showcase { grid-template-columns:1fr; gap:40px; text-align:center; }
+    .feat-list { max-width:420px; margin-left:auto; margin-right:auto; text-align:left; }
+    .steps, .pointa-grid, .doubts-grid { grid-template-columns:1fr; }
+    .pointb-grid { grid-template-columns:1fr; gap:32px; }
+    .band .wrap { grid-template-columns:1fr; gap:34px; }
+    .phone { transform:rotate(0deg); }
+    .pointa-q { margin-left:auto; margin-right:auto; }
+  }
+  @media (max-width:520px) {
+    .wrap { padding:0 20px; }
+    .nav-inner { padding:14px 20px; }
+    .hero { padding:48px 0 24px; }
+    .email-form { flex-direction:column; }
+    .email-form button { width:100%; }
+    .foot-inner { flex-direction:column; align-items:flex-start; }
+    .vrow { grid-template-columns:1fr; gap:14px; text-align:center; }
+    .vrow .old { text-align:center; }
+    .vrow .arr { margin:0 auto; transform:rotate(90deg); }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+    .reveal { opacity:1; transform:none; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="atmos"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+<div class="grain"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top"><img src="assets/icon.png" alt="Cartless icon"><span class="wm">Cartless</span></a>
+    <a class="nav-cta" href="#get">Get the app</a>
+  </div>
+</nav>
+
+<a id="top"></a>
+
+<!-- ============ HERO — Oneliner: What + Core Job + value ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1 class="hero-title">Pause impulse,<br><span class="accent">grow savings.</span></h1>
+        <p class="hero-sub">Cartless is the gentle iOS app for impulse buying. Almost bought something you didn't need? <strong>Walk away and log it</strong> — and watch the money you'd have spent stack up into something you actually want.</p>
+        <div class="cta-row" id="get">
+          <a class="appstore soon" href="#waitlist">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.05 12.04c-.03-2.43 1.99-3.6 2.08-3.65-1.13-1.66-2.9-1.88-3.52-1.91-1.5-.15-2.93.88-3.69.88-.76 0-1.93-.86-3.18-.84-1.63.02-3.14.95-3.98 2.41-1.7 2.95-.43 7.3 1.21 9.69.8 1.17 1.76 2.48 3.01 2.43 1.21-.05 1.67-.78 3.13-.78 1.46 0 1.87.78 3.15.76 1.3-.03 2.13-1.19 2.93-2.36.92-1.35 1.3-2.66 1.32-2.73-.03-.01-2.53-.97-2.56-3.85zM14.6 4.7c.67-.81 1.12-1.94.99-3.07-.96.04-2.12.64-2.81 1.45-.62.72-1.16 1.87-1.02 2.97 1.07.08 2.17-.55 2.84-1.35z"/></svg>
+            <span class="as-txt"><span class="as-small">Download on the</span><span class="as-big">App Store</span></span>
+          </a>
+          <p class="cta-note">On Apple review now.<br><a href="#waitlist">Join the waitlist →</a></p>
+        </div>
+      </div>
+
+      <div class="phone-stage">
+        <div class="phone">
+          <div class="statusbar"><span>17:34</span><span>&#9211;</span></div>
+          <div class="ptop">
+            <div class="brand"><img src="assets/icon.png" alt=""><span class="wm">Cartless</span></div>
+            <span class="streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> 5d</span>
+          </div>
+          <div class="chips">
+            <div class="chip"><div class="lbl">SAVED</div><div class="val"><span class="bright">$860</span> <span class="dim">of $3,500</span></div></div>
+            <div class="chip"><div class="lbl">NO-BUY GOAL</div><div class="val"><span class="bright-p">8</span> <span class="dim">of 100</span></div></div>
+          </div>
+          <div class="week">
+            <div class="day clean">8</div><div class="day today">9</div><div class="day clean">10</div><div class="day clean">11</div><div class="day clean">12</div><div class="day empty">13</div><div class="day empty">14</div>
+          </div>
+          <div class="hero-action">
+            <div class="orb-primary"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="ha-title">I didn't buy</div>
+            <div class="ha-sub">Log a win for today</div>
+          </div>
+          <div class="tempted-row">
+            <div class="tempted-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+              <span>Tempted? Start a pause</span>
+            </div>
+          </div>
+          <div class="pausecard">
+            <div class="pc-top"><span class="pc-item">Sony headphones &middot; $349</span><span class="pc-time">23h 59m</span></div>
+            <div class="pc-btns"><div class="pc-btn kept">I didn't buy</div><div class="pc-btn bought">I bought it</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CORE JOB + value + micro-jobs ============ -->
+<section class="section-pad corejob">
+  <div class="wrap reveal">
+    <div class="kicker plum">What Cartless does</div>
+    <h2>Spend less on impulse — <span class="em">without feeling deprived or ashamed.</span></h2>
+    <p class="lead center">One calm app that turns each thing you walk away from into a logged win, real money kept, and steady progress toward 100 skips.</p>
+    <div class="micro-jobs">
+      <span class="mj g"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Log what you skipped</span>
+      <span class="mj g"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Watch your savings grow</span>
+      <span class="mj p"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>Not sure? Pause it 24–48h</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ УЗНАЁТЕ СЕБЯ? — Point A ============ -->
+<section class="section-pad">
+  <div class="wrap">
+    <div class="reveal center head-narrow">
+      <div class="kicker">Sound familiar?</div>
+      <p class="pointa-q">You want to <b>stop spending on autopilot</b> — but the cart keeps filling itself when you're tired, bored, or a little down.</p>
+    </div>
+    <div class="pointa-grid">
+      <div class="pa-card reveal">
+        <div class="pa-lbl">It starts like this</div>
+        <ul>
+          <li>You open an app "just to look"</li>
+          <li>A sale, a haul video, a 2am scroll</li>
+          <li>"It's only $30, I deserve it"</li>
+        </ul>
+      </div>
+      <div class="pa-card reveal">
+        <div class="pa-lbl">How it feels</div>
+        <ul>
+          <li>A quick high at checkout — then nothing</li>
+          <li>Quiet guilt when the box arrives</li>
+          <li>That sinking feeling at the statement</li>
+        </ul>
+      </div>
+      <div class="pa-card reveal">
+        <div class="pa-lbl">What it costs</div>
+        <ul>
+          <li>Money gone on things you forgot you bought</li>
+          <li>Clutter you didn't actually want</li>
+          <li>The trip or goal that never gets funded</li>
+        </ul>
+      </div>
+    </div>
+    <p class="problem-foot center reveal" style="margin-top:30px; max-width:40em; margin-left:auto; margin-right:auto;">You're not bad with money. Impulse buying is <em>designed</em> to be automatic. Cartless just puts one calm beat between the urge and the tap — no lectures, no guilt.</p>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS — 3 steps (easiest micro-job lived first) ============ -->
+<section class="section-pad">
+  <div class="wrap">
+    <div class="reveal center head-narrow">
+      <div class="kicker">How it works</div>
+      <h2>Three steps. <span class="em">That's the whole app.</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="step-num">1</span>
+        <div class="step-ic ic-plum">
+          <svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+        </div>
+        <h3>Catch the impulse</h3>
+        <p>About to buy something you don't really need? That's the moment Cartless is for — before the tap, not after the regret.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">2</span>
+        <div class="step-ic ic-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <h3>Walk away and log it</h3>
+        <p>Tap "I didn't buy", jot the item and price. Not sure yet? Pause it 24–48 hours — the wanting almost always fades, and then it's a real choice.</p>
+      </div>
+      <div class="step reveal">
+        <span class="step-num">3</span>
+        <div class="step-ic ic-green"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <h3>Watch it stack up</h3>
+        <p>The money you didn't spend grows in plain sight, and each skip moves you toward 100. Spending less becomes a win you can see.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STAT BAND — aha echo ============ -->
+<section class="band">
+  <div class="wrap">
+    <div class="stat reveal"><div class="n">100</div><div class="l">skips to stack up, one walk-away at a time — <strong>a goal that rewards every "no"</strong></div></div>
+    <div class="stat reveal"><div class="n">$860</div><div class="l"><strong>saved and visible</strong> in the demo — your real number grows with every skip</div></div>
+    <div class="stat reveal"><div class="n">0</div><div class="l">guilt, shame, or finger-wagging. <strong>This is a kinder way to spend less</strong></div></div>
+  </div>
+</section>
+
+<!-- ============ ЧТО ВЫ ПОЛУЧИТЕ + showcase (aha lived) ============ -->
+<section class="section-pad">
+  <div class="wrap showcase">
+    <div class="phone-stage reveal">
+      <div class="phone" style="transform:rotate(1.5deg);">
+        <div class="statusbar"><span>9:41</span><span>&#9211;</span></div>
+        <div class="ptop">
+          <div class="brand"><img src="assets/icon.png" alt=""><span class="wm">Cartless</span></div>
+          <span class="streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> 12d</span>
+        </div>
+        <div class="chips">
+          <div class="chip"><div class="lbl">SAVED</div><div class="val"><span class="bright">$1,420</span> <span class="dim">of $3,500</span></div></div>
+          <div class="chip"><div class="lbl">NO-BUY GOAL</div><div class="val"><span class="bright-p">21</span> <span class="dim">of 100</span></div></div>
+        </div>
+        <div class="week">
+          <div class="day clean">15</div><div class="day clean">16</div><div class="day clean">17</div><div class="day today">18</div><div class="day empty">19</div><div class="day empty">20</div><div class="day empty">21</div>
+        </div>
+        <div class="hero-action">
+          <div class="orb-primary"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="ha-title">I didn't buy</div>
+          <div class="ha-sub">Log a win for today</div>
+        </div>
+        <div class="tempted-row">
+          <div class="tempted-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            <span>Tempted? Start a pause</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="kicker">What you get</div>
+      <h2>A money app that<br><span class="em">never makes you feel small.</span></h2>
+      <ul class="feat-list">
+        <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="ft">One tap to log a win<span class="sub">"I didn't buy" — the whole habit in a single button.</span></span></li>
+        <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="ft">Watch the money pile up<span class="sub">Your saved total is the hero of the screen, not your spending.</span></span></li>
+        <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="ft">A goal of 100 skips, not 100 rules<span class="sub">Every "no" you log moves a counter forward — progress you'll want to protect.</span></span></li>
+        <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <span class="ft">No judgment, ever<span class="sub">Bought it anyway? That's fine. Tomorrow's a clean page.</span></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ К ЧЕМУ ВЫ ПРИДЁТЕ — Point B ============ -->
+<section class="section-pad">
+  <div class="wrap">
+    <div class="reveal center head-narrow">
+      <div class="kicker plum">Where this takes you</div>
+      <h2>A few weeks in, <span class="em">something quietly shifts.</span></h2>
+    </div>
+    <div class="pointb-grid">
+      <div class="pb-col reveal">
+        <h4>How you'll feel</h4>
+        <ul class="pb-list">
+          <li><span class="pb-ic feel"><svg viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>In control of the urge, instead of ruled by it</li>
+          <li><span class="pb-ic feel"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></span>Calm at checkout, not a craving you have to fight</li>
+          <li><span class="pb-ic feel"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>Proud of a balance that finally moves the right way</li>
+        </ul>
+      </div>
+      <div class="pb-col reveal">
+        <h4>What you'll have done</h4>
+        <ul class="pb-list">
+          <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Saved real money toward something you actually want</li>
+          <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>Stacked up a wall of skips on the way to 100</li>
+          <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 8 9 8 9"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 16 9 16 9"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>Turned "spending less" into a win you can see, not a chore</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ У ВАС ЕСТЬ СОМНЕНИЯ? — Barriers ============ -->
+<section class="section-pad">
+  <div class="wrap">
+    <div class="reveal center head-narrow">
+      <div class="kicker">Honest questions</div>
+      <h2>Wondering if it'll <span class="em">actually work for you?</span></h2>
+    </div>
+    <div class="doubts-grid">
+      <div class="doubt reveal">
+        <div class="q">Is this just another app that shames me?</div>
+        <p class="a">No. Cartless has <strong>no red numbers and no nagging</strong>. Bought something anyway? Fine. The screen celebrates what you saved, never what you spent.</p>
+      </div>
+      <div class="doubt reveal">
+        <div class="q">I have zero willpower. Won't I just ignore it?</div>
+        <p class="a">It doesn't run on willpower. <strong>Walking away once does the work</strong> — log it, and if you're unsure, a 24–48h pause lets the urge fade on its own. One tap, not a personality change.</p>
+      </div>
+      <div class="doubt reveal">
+        <div class="q">Will I have to track every cent?</div>
+        <p class="a">Never. <strong>No bank login, no budgets, no spreadsheets.</strong> You log a skip when it happens. That's the entire commitment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ПОЧЕМУ НЕ СИЛА ВОЛИ — replaces "fire competitors" ============ -->
+<section class="section-pad">
+  <div class="wrap">
+    <div class="reveal center head-narrow">
+      <div class="kicker plum">Why this, not the usual fixes</div>
+      <h2>The old ways ask you to <span class="em">white-knuckle it.</span> Cartless doesn't.</h2>
+    </div>
+    <div class="versus">
+      <div class="vrow reveal">
+        <div class="old"><div class="vt">Willpower &amp; "just stop"</div><div class="vs">Works until you're tired or stressed — exactly when you overspend</div></div>
+        <div class="arr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <div class="new"><div class="vt">Walk away, then log it</div><div class="vs">One small action in the moment — and an optional 24–48h pause if you're unsure</div></div>
+      </div>
+      <div class="vrow reveal">
+        <div class="old"><div class="vt">Budgeting spreadsheets</div><div class="vs">Track everything, feel guilty, quit by week two</div></div>
+        <div class="arr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <div class="new"><div class="vt">One tap when it counts</div><div class="vs">Log a skip in the moment — no admin, no spreadsheet</div></div>
+      </div>
+      <div class="vrow reveal">
+        <div class="old"><div class="vt">A strict "no-buy" challenge</div><div class="vs">All-or-nothing rules that one slip can blow up</div></div>
+        <div class="arr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <div class="new"><div class="vt">A count toward 100 skips</div><div class="vs">Buy something? You just don't log it — your wins so far still stand</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA / WAITLIST ============ -->
+<section class="final" id="waitlist">
+  <div class="wrap reveal">
+    <div class="kicker">Be first in line</div>
+    <h2>Spend on what actually <span class="em">makes you happy.</span></h2>
+    <p class="lead">Cartless is on Apple review right now. Drop your email and we'll send the App Store link the moment it goes live — nothing else.</p>
+
+    <form class="email-form" id="waitForm" novalidate>
+      <input type="email" id="emailInput" placeholder="you@email.com" autocomplete="email" required aria-label="Email address">
+      <button type="submit">Notify me</button>
+    </form>
+    <p class="form-msg" id="formMsg">You're on the list. We'll be in touch the day it launches. 💜</p>
+
+    <div class="cta-row">
+      <a class="appstore soon" href="#waitlist">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.05 12.04c-.03-2.43 1.99-3.6 2.08-3.65-1.13-1.66-2.9-1.88-3.52-1.91-1.5-.15-2.93.88-3.69.88-.76 0-1.93-.86-3.18-.84-1.63.02-3.14.95-3.98 2.41-1.7 2.95-.43 7.3 1.21 9.69.8 1.17 1.76 2.48 3.01 2.43 1.21-.05 1.67-.78 3.13-.78 1.46 0 1.87.78 3.15.76 1.3-.03 2.13-1.19 2.93-2.36.92-1.35 1.3-2.66 1.32-2.73-.03-.01-2.53-.97-2.56-3.85zM14.6 4.7c.67-.81 1.12-1.94.99-3.07-.96.04-2.12.64-2.81 1.45-.62.72-1.16 1.87-1.02 2.97 1.07.08 2.17-.55 2.84-1.35z"/></svg>
+        <span class="as-txt"><span class="as-small">Download on the</span><span class="as-big">App Store</span></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap foot-inner">
+    <div>
+      <div class="foot-brand"><img src="assets/icon.png" alt="Cartless"><span>Cartless</span></div>
+      <p class="foot-copy">A kinder way to spend less. Made for people, not budgets.</p>
+    </div>
+    <div class="foot-links">
+      <a href="https://annagoodnova.github.io/cartless-legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+      <a href="https://annagoodnova.github.io/cartless-legal/terms.html" target="_blank" rel="noopener">Terms</a>
+      <a href="#waitlist">Get the app</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // nav border on scroll
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  // reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // waitlist form — stores locally for now (no backend on a static host).
+  // Set EMAIL_ENDPOINT to a Formspree/Buttondown URL to collect for real.
+  const EMAIL_ENDPOINT = ''; // e.g. 'https://formspree.io/f/xxxxxx'
+  const form = document.getElementById('waitForm');
+  const input = document.getElementById('emailInput');
+  const msg = document.getElementById('formMsg');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = input.value.trim();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      msg.textContent = 'Hmm, that email looks off — mind checking it?';
+      msg.style.color = '#b4453a';
+      msg.classList.add('show');
+      input.focus();
+      return;
+    }
+    if (EMAIL_ENDPOINT) {
+      try {
+        await fetch(EMAIL_ENDPOINT, {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json', 'Accept':'application/json' },
+          body:JSON.stringify({ email })
+        });
+      } catch (_) { /* fall through to optimistic success */ }
+    } else {
+      try {
+        const list = JSON.parse(localStorage.getItem('cartless_waitlist') || '[]');
+        if (!list.includes(email)) list.push(email);
+        localStorage.setItem('cartless_waitlist', JSON.stringify(list));
+      } catch (_) {}
+    }
+    form.reset();
+    msg.textContent = "You're on the list. We'll be in touch the day it launches. 💜";
+    msg.style.color = '';
+    msg.classList.add('show');
+  });
+</script>
+
+</body>
+</html>
