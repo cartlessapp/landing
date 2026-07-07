@@ -347,6 +347,10 @@
     html { scroll-behavior:auto; }
   }
 </style>
+
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c233396264ea43d98bcd3931839f63ec"}'></script>
+<!-- End Cloudflare Web Analytics -->
 </head>
 <body>
 
@@ -676,6 +680,19 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // track App Store clicks as a Cloudflare custom event (view -> store-intent)
+  document.querySelectorAll('a[href*="apps.apple.com"]').forEach((el, i) => {
+    // label each button by where it sits on the page
+    const spot = el.classList.contains('nav-cta') ? 'nav'
+               : el.closest('.hero') ? 'hero'
+               : 'footer';
+    el.addEventListener('click', () => {
+      if (window.__cfBeacon && typeof window.__cfBeacon.trackEvent === 'function') {
+        window.__cfBeacon.trackEvent('download_click', { spot });
+      }
+    });
+  });
 </script>
 
 </body>
