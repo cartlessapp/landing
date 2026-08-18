@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartless — Pause impulse, grow savings.</title>
-<meta name="description" content="Cartless is the no-shame iOS app against impulse buying. Log the things you walk away from, grow your savings, and stack up 100 skips. No guilt, no spreadsheets.">
+<title>Cartless — The no-buy tracker.</title>
+<meta name="description" content="Cartless is the no-shame no-buy tracker for iPhone. Pick the categories that tempt you, mark the days you skip, and watch a year fill in — one square at a time — while your savings add up.">
 
 <!-- Open Graph / social -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="Cartless — Pause impulse, grow savings.">
-<meta property="og:description" content="A no-shame app against impulse buying. Log what you walk away from, grow your savings, stack up the wins.">
+<meta property="og:title" content="Cartless — The no-buy tracker.">
+<meta property="og:description" content="Pick the categories that tempt you, mark the days you skip, watch your savings add up. A no-shame no-buy tracker for iPhone.">
 <meta property="og:image" content="assets/icon.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#5B21B6">
@@ -128,6 +128,9 @@
     box-shadow:0 30px 80px rgba(40,20,80,0.22), 0 4px 16px rgba(0,0,0,0.06);
     padding:46px 20px 0; transform:rotate(-1.2deg); transition:transform .5s cubic-bezier(.2,.8,.2,1); }
   .phone:hover { transform:rotate(0deg) translateY(-4px); }
+  /* the card list runs past the bottom edge — fade it out like a real scroll */
+  .phone::after { content:''; position:absolute; left:0; right:0; bottom:0; height:64px;
+    background:linear-gradient(to bottom, rgba(246,245,250,0), var(--bg)); pointer-events:none; }
   .statusbar { position:absolute; top:15px; left:0; right:0; display:flex; justify-content:space-between;
     padding:0 26px; font-size:12px; font-weight:500; color:var(--text); }
   .ptop { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
@@ -136,40 +139,57 @@
   .streak { background:#fff; border:1px solid var(--hairline); border-radius:100px; padding:5px 12px;
     font-size:12px; font-weight:500; color:var(--gray-text); display:flex; align-items:center; gap:5px; }
   .streak svg { width:13px; height:13px; }
-  .chips { display:flex; gap:9px; margin-bottom:14px; }
-  .chip { flex:1; background:#fff; border:1px solid var(--hairline); border-radius:15px; padding:12px 13px; }
-  .chip .lbl { font-size:8.5px; font-weight:500; letter-spacing:0.5px; color:var(--gray-text); margin-bottom:5px; }
-  .chip .val { font-size:18px; font-weight:400; }
-  .chip .val .bright { color:var(--green-deep); }
-  .chip .val .bright-p { color:#454D59; }
-  .chip .val .dim { color:var(--muted-val); font-weight:400; font-size:13px; }
-  .week { display:flex; gap:5px; justify-content:space-between; margin-bottom:24px; }
-  .day { flex:1; aspect-ratio:1; border-radius:50%; display:flex; align-items:center;
-    justify-content:center; font-size:12px; font-weight:500; max-width:36px; }
-  .day.clean { border:2px solid var(--green); color:var(--green-deep); }
-  .day.today { border:2px solid var(--gray); color:var(--gray-text); }
-  .day.empty { border:1.5px solid var(--empty-border); color:var(--empty-text); }
-  .hero-action { text-align:center; margin-bottom:14px; }
-  .orb-primary { width:132px; height:132px; border-radius:50%; margin:0 auto; display:flex;
-    align-items:center; justify-content:center;
-    background:radial-gradient(circle at 35% 28%, var(--green-light), var(--green));
-    box-shadow:0 14px 44px var(--green-glow); }
-  .orb-primary svg { width:54px; height:54px; stroke:#fff; }
-  .ha-title { font-size:16px; font-weight:500; margin-top:14px; }
-  .ha-sub { font-size:11.5px; color:var(--gray-text); margin-top:3px; }
-  .tempted-row { display:flex; justify-content:center; margin-bottom:22px; }
-  .tempted-pill { display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--hairline);
-    border-radius:100px; padding:10px 18px; }
-  .tempted-pill svg { width:17px; height:17px; stroke:var(--plum); }
-  .tempted-pill span { font-size:13px; color:var(--plum); font-weight:500; }
-  .pausecard { background:#fff; border:1px solid var(--hairline); border-radius:16px; padding:14px 15px; margin-bottom:18px; }
-  .pc-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-  .pc-item { font-size:13.5px; font-weight:500; }
-  .pc-time { font-size:12px; color:var(--plum); font-weight:500; }
-  .pc-btns { display:flex; gap:9px; }
-  .pc-btn { flex:1; text-align:center; padding:11px; border-radius:11px; font-size:13px; font-weight:500; }
-  .pc-btn.kept { background:#fff; border:2px solid var(--green); color:var(--green-deep); }
-  .pc-btn.bought { background:#fff; border:1px solid var(--hairline); color:var(--gray-text); }
+  /* phone header: wordmark + total saved (matches the app's Home) */
+  .ptop-left .wm-sub { font-size:10px; color:var(--gray-text); font-weight:400; margin-top:-2px; }
+  .ptop-right { text-align:right; }
+  .ptop-right .amount { font-size:23px; font-weight:400; color:var(--green-deep); letter-spacing:-0.01em; line-height:1.1; }
+  .ptop-right .amount-lbl { font-size:10px; color:var(--gray-text); font-weight:400; }
+  .markall { display:flex; align-items:center; justify-content:center; gap:7px; background:#fff;
+    border:1px solid var(--hairline); border-radius:13px; padding:10px; margin-bottom:12px; }
+  .markall svg { width:14px; height:14px; stroke:var(--gray-text); stroke-width:2; fill:none;
+    stroke-linecap:round; stroke-linejoin:round; }
+  .markall span { font-size:12.5px; color:#3a3a42; font-weight:400; }
+
+  /* category card with a year grid — the core of the app */
+  .catcard { background:#fff; border:1px solid var(--hairline); border-radius:15px;
+    padding:11px 12px 12px; margin-bottom:9px; }
+  .catcard.active { border:1.5px solid var(--green); }
+  .cat-top { display:flex; align-items:center; gap:6px; margin-bottom:9px; }
+  .cat-emoji { font-size:12px; line-height:1; }
+  .cat-name { font-size:11.5px; font-weight:500; letter-spacing:-0.01em; }
+  .cat-saved { font-size:11px; color:var(--gray-text); font-weight:300; }
+  .cat-ring { margin-left:auto; width:26px; height:26px; flex-shrink:0; position:relative; }
+  .cat-ring svg { width:26px; height:26px; transform:rotate(-90deg); }
+  .cat-ring .track { fill:none; stroke:var(--empty-border); stroke-width:2; }
+  .cat-ring .prog { fill:none; stroke:var(--green); stroke-width:2; stroke-linecap:round; }
+  .cat-ring .n { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:9px; font-weight:500; color:var(--gray-text); }
+  /* the year grid: 52 columns × 7 rows, one square per day.
+     Column-flow so a column reads as a week, like the app. */
+  .grid-year { display:grid; grid-template-rows:repeat(7, 3.6px); grid-auto-columns:3.6px;
+    grid-auto-flow:column; gap:1.2px; overflow:hidden; }
+  .grid-year i { display:block; border-radius:1px; background:#EFEEF4; }
+  .grid-year i.s { background:var(--green); }
+  .grid-year i.b { background:var(--plum-light); }
+  .grid-year i.t { background:#fff; box-shadow:inset 0 0 0 1px var(--text); }
+
+  /* Goals mockup — savings chart (second screen of the app) */
+  .phone-goals { padding-bottom:26px; }
+  .phone-goals::after { display:none; }
+  .goalcard { background:#fff; border:1px solid var(--hairline); border-radius:17px; padding:18px 16px 14px; }
+  .gc-amount { font-size:34px; font-weight:400; color:var(--green-deep); letter-spacing:-0.02em; line-height:1; }
+  .gc-lbl { font-size:12px; color:var(--gray-text); font-weight:300; margin-top:5px; }
+  .chart { position:relative; margin-top:18px; padding-left:34px; }
+  .chart svg { width:100%; height:132px; display:block; overflow:visible; }
+  .chart .gl { stroke:var(--hairline); stroke-width:1; }
+  .chart .line { fill:none; stroke:var(--green); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+  .chart .area { fill:rgba(10,122,85,0.11); stroke:none; }
+  .chart .dot { fill:var(--green); }
+  .chart .y-lbls { position:absolute; left:0; top:0; height:132px; width:32px;
+    display:flex; flex-direction:column; justify-content:space-between; text-align:right;
+    font-size:9.5px; color:var(--gray-text); font-weight:300; }
+  .chart .x-lbls { display:flex; justify-content:space-between; margin-top:6px;
+    font-size:9.5px; color:var(--gray-text); font-weight:300; }
 
   /* ============ section scaffolding ============ */
   section { position:relative; z-index:2; }
@@ -372,8 +392,8 @@
   <div class="wrap">
     <div class="hero-grid">
       <div class="hero-copy">
-        <h1 class="hero-title">Pause impulse,<br><span class="accent">grow savings.</span></h1>
-        <p class="hero-sub">Cartless is the gentle iOS app for impulse buying. Almost bought something you didn't need? <strong>Walk away and log it</strong> — and watch the money you'd have spent stack up into something you actually want.</p>
+        <h1 class="hero-title">Every day you skip,<br><span class="accent">one square at a time.</span></h1>
+        <p class="hero-sub">Cartless is a gentle <strong>no-buy tracker</strong> for iPhone. Pick the categories that tempt you, mark the days you didn't buy, and watch a whole year fill in — while the money you didn't spend adds up.</p>
         <div class="cta-row" id="get">
           <a class="appstore" href="https://apps.apple.com/app/id6778073110" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.05 12.04c-.03-2.43 1.99-3.6 2.08-3.65-1.13-1.66-2.9-1.88-3.52-1.91-1.5-.15-2.93.88-3.69.88-.76 0-1.93-.86-3.18-.84-1.63.02-3.14.95-3.98 2.41-1.7 2.95-.43 7.3 1.21 9.69.8 1.17 1.76 2.48 3.01 2.43 1.21-.05 1.67-.78 3.13-.78 1.46 0 1.87.78 3.15.76 1.3-.03 2.13-1.19 2.93-2.36.92-1.35 1.3-2.66 1.32-2.73-.03-.01-2.53-.97-2.56-3.85zM14.6 4.7c.67-.81 1.12-1.94.99-3.07-.96.04-2.12.64-2.81 1.45-.62.72-1.16 1.87-1.02 2.97 1.07.08 2.17-.55 2.84-1.35z"/></svg>
@@ -387,30 +407,53 @@
         <div class="phone">
           <div class="statusbar"><span>17:34</span><span>&#9211;</span></div>
           <div class="ptop">
-            <div class="brand"><img src="assets/icon.png" alt=""><span class="wm">Cartless</span></div>
-            <span class="streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> 5d</span>
-          </div>
-          <div class="chips">
-            <div class="chip"><div class="lbl">SAVED</div><div class="val"><span class="bright">$860</span> <span class="dim">of $3,500</span></div></div>
-            <div class="chip"><div class="lbl">NO-BUY GOAL</div><div class="val"><span class="bright-p">8</span> <span class="dim">of 100</span></div></div>
-          </div>
-          <div class="week">
-            <div class="day clean">8</div><div class="day today">9</div><div class="day clean">10</div><div class="day clean">11</div><div class="day clean">12</div><div class="day empty">13</div><div class="day empty">14</div>
-          </div>
-          <div class="hero-action">
-            <div class="orb-primary"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-            <div class="ha-title">I didn't buy</div>
-            <div class="ha-sub">Log a win for today</div>
-          </div>
-          <div class="tempted-row">
-            <div class="tempted-pill">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
-              <span>Tempted? Start a pause</span>
+            <div class="ptop-left">
+              <span class="wm">Cartless</span>
+              <div class="wm-sub">no-buy tracker</div>
+            </div>
+            <div class="ptop-right">
+              <div class="amount">$1,625</div>
+              <div class="amount-lbl">total saved</div>
             </div>
           </div>
-          <div class="pausecard">
-            <div class="pc-top"><span class="pc-item">Sony headphones &middot; $349</span><span class="pc-time">23h 59m</span></div>
-            <div class="pc-btns"><div class="pc-btn kept">I didn't buy</div><div class="pc-btn bought">I bought it</div></div>
+          <div class="markall">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="16 9.5 11 15 8.5 12.5"/></svg>
+            <span>Mark all as no-buy</span>
+          </div>
+          <div class="catcard active">
+            <div class="cat-top"><span class="cat-emoji">&#9749;</span><span class="cat-name">Coffee &amp; snacks</span>
+              <span class="cat-saved">&middot; $280 saved</span>
+              <span class="cat-ring"><svg viewBox="0 0 26 26"><circle class="track" cx="13" cy="13" r="11"/><circle class="prog" cx="13" cy="13" r="11" stroke-dasharray="69.1" stroke-dashoffset="27"/></svg><span class="n">61</span></span>
+            </div>
+            <div class="grid-year" data-cells="ss.sssssb.sss.bs..bssssssssss.sbsbss...bssss.s.s..ss.s.ssb.sss..ssss.ssssbsbssss..s.ss.bs.ss.ssst"></div>
+          </div>
+          <div class="catcard">
+            <div class="cat-top"><span class="cat-emoji">&#127836;</span><span class="cat-name">Eating out</span>
+              <span class="cat-saved">&middot; $580 saved</span>
+              <span class="cat-ring"><svg viewBox="0 0 26 26"><circle class="track" cx="13" cy="13" r="11"/><circle class="prog" cx="13" cy="13" r="11" stroke-dasharray="69.1" stroke-dashoffset="29"/></svg><span class="n">58</span></span>
+            </div>
+            <div class="grid-year" data-cells="...sbsssssssss.ss.ss.bbb.s.ssbsss.bsbsss.ssssss.ssss.sss.b.ss.b.s.sss.b...s..s.sssss..sssss.ss.st"></div>
+          </div>
+          <div class="catcard active">
+            <div class="cat-top"><span class="cat-emoji">&#128087;</span><span class="cat-name">Clothing &amp; shoes</span>
+              <span class="cat-saved">&middot; $105 saved</span>
+              <span class="cat-ring"><svg viewBox="0 0 26 26"><circle class="track" cx="13" cy="13" r="11"/><circle class="prog" cx="13" cy="13" r="11" stroke-dasharray="69.1" stroke-dashoffset="36"/></svg><span class="n">47</span></span>
+            </div>
+            <div class="grid-year" data-cells=".sb..sbsbs.bss.s...ssss..bbbsbsss..sbsss...s..s.bs.ssbssbsbsbss.ssssbsbbss.sb.ssbs.sss.s....sb.st"></div>
+          </div>
+          <div class="catcard">
+            <div class="cat-top"><span class="cat-emoji">&#128132;</span><span class="cat-name">Beauty &amp; skincare</span>
+              <span class="cat-saved">&middot; $90 saved</span>
+              <span class="cat-ring"><svg viewBox="0 0 26 26"><circle class="track" cx="13" cy="13" r="11"/><circle class="prog" cx="13" cy="13" r="11" stroke-dasharray="69.1" stroke-dashoffset="39"/></svg><span class="n">44</span></span>
+            </div>
+            <div class="grid-year" data-cells="sss.b.bs.b...sss.s..s.s..s..s.s...ss..s..ss.s.bssss.s.b..ssss...s.s....s..ss..ss.ss.s.s.s...sssst"></div>
+          </div>
+          <div class="catcard" style="margin-bottom:0;">
+            <div class="cat-top"><span class="cat-emoji">&#127911;</span><span class="cat-name">Tech &amp; gadgets</span>
+              <span class="cat-saved">&middot; $75 saved</span>
+              <span class="cat-ring"><svg viewBox="0 0 26 26"><circle class="track" cx="13" cy="13" r="11"/><circle class="prog" cx="13" cy="13" r="11" stroke-dasharray="69.1" stroke-dashoffset="46"/></svg><span class="n">34</span></span>
+            </div>
+            <div class="grid-year" data-cells="s..s...s.s....s....s..ss...ss...sssb.b.sb.ss..s...b..sss.sbbb.b..ss.sss..s.sbs...s..sb..s.s...s.t"></div>
           </div>
         </div>
       </div>
@@ -423,11 +466,11 @@
   <div class="wrap reveal">
     <div class="kicker plum">What Cartless does</div>
     <h2>Spend less on impulse — <span class="em">without feeling deprived or ashamed.</span></h2>
-    <p class="lead center">One calm app that turns each thing you walk away from into a logged win, real money kept, and steady progress toward 100 skips.</p>
+    <p class="lead center">One calm tracker that turns "I didn't buy anything today" into a square you can see, money you can count, and a pattern you can finally read.</p>
     <div class="micro-jobs">
-      <span class="mj g"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Log what you skipped</span>
+      <span class="mj g"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Mark your no-buy days</span>
       <span class="mj g"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Watch your savings grow</span>
-      <span class="mj p"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>Not sure? Pause it 24–48h</span>
+      <span class="mj p"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>See a whole year at a glance</span>
     </div>
   </div>
 </section>
@@ -465,7 +508,7 @@
         </ul>
       </div>
     </div>
-    <p class="problem-foot center reveal" style="margin-top:30px; max-width:40em; margin-left:auto; margin-right:auto;">You're not bad with money. Impulse buying is <em>designed</em> to be automatic. Cartless just puts one calm beat between the urge and the tap — no lectures, no guilt.</p>
+    <p class="problem-foot center reveal" style="margin-top:30px; max-width:40em; margin-left:auto; margin-right:auto;">You're not bad with money. Impulse buying is <em>designed</em> to be automatic. Cartless just makes the days you don't buy visible — no lectures, no guilt.</p>
   </div>
 </section>
 
@@ -480,22 +523,22 @@
       <div class="step reveal">
         <span class="step-num">1</span>
         <div class="step-ic ic-plum">
-          <svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         </div>
-        <h3>Catch the impulse</h3>
-        <p>About to buy something you don't really need? That's the moment Cartless is for — before the tap, not after the regret.</p>
+        <h3>Pick what tempts you</h3>
+        <p>Coffee, delivery, clothes, skincare, gadgets — start from 11 ready categories, add your own, and set what one skip is worth to you.</p>
       </div>
       <div class="step reveal">
         <span class="step-num">2</span>
         <div class="step-ic ic-green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <h3>Walk away and log it</h3>
-        <p>Tap "I didn't buy", jot the item and price. Not sure yet? Pause it 24–48 hours — the wanting almost always fades, and then it's a real choice.</p>
+        <h3>Mark the days you skip</h3>
+        <p>Didn't buy coffee today? Tap the square. Clean day across the board? "Mark all as no-buy" does the lot in one tap.</p>
       </div>
       <div class="step reveal">
         <span class="step-num">3</span>
         <div class="step-ic ic-green"><svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-        <h3>Watch it stack up</h3>
-        <p>The money you didn't spend grows in plain sight, and each skip moves you toward 100. Spending less becomes a win you can see.</p>
+        <h3>Watch a year fill in</h3>
+        <p>Every category keeps its own grid — one square per day. The money adds up on top, and a few months in you can read your whole pattern at a glance.</p>
       </div>
     </div>
   </div>
@@ -504,8 +547,8 @@
 <!-- ============ STAT BAND — aha echo ============ -->
 <section class="band">
   <div class="wrap">
-    <div class="stat reveal"><div class="n">100</div><div class="l">skips to stack up, one walk-away at a time — <strong>a goal that rewards every "no"</strong></div></div>
-    <div class="stat reveal"><div class="n">$860</div><div class="l"><strong>saved and visible</strong> in the demo — your real number grows with every skip</div></div>
+    <div class="stat reveal"><div class="n">364</div><div class="l">squares in a category's grid — <strong>a full year of no-buy days</strong>, one tap each</div></div>
+    <div class="stat reveal"><div class="n">100</div><div class="l">skips to your first milestone. <strong>Hit it and the next one opens at 400</strong></div></div>
     <div class="stat reveal"><div class="n">0</div><div class="l">guilt, shame, or finger-wagging. <strong>This is a kinder way to spend less</strong></div></div>
   </div>
 </section>
@@ -514,28 +557,25 @@
 <section class="section-pad">
   <div class="wrap showcase">
     <div class="phone-stage reveal">
-      <div class="phone" style="transform:rotate(1.5deg);">
+      <div class="phone phone-goals" style="transform:rotate(1.5deg);">
         <div class="statusbar"><span>9:41</span><span>&#9211;</span></div>
         <div class="ptop">
-          <div class="brand"><img src="assets/icon.png" alt=""><span class="wm">Cartless</span></div>
-          <span class="streak"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> 12d</span>
+          <div class="ptop-left"><span class="wm">Goals</span><div class="wm-sub">savings</div></div>
         </div>
-        <div class="chips">
-          <div class="chip"><div class="lbl">SAVED</div><div class="val"><span class="bright">$1,420</span> <span class="dim">of $3,500</span></div></div>
-          <div class="chip"><div class="lbl">NO-BUY GOAL</div><div class="val"><span class="bright-p">21</span> <span class="dim">of 100</span></div></div>
-        </div>
-        <div class="week">
-          <div class="day clean">15</div><div class="day clean">16</div><div class="day clean">17</div><div class="day today">18</div><div class="day empty">19</div><div class="day empty">20</div><div class="day empty">21</div>
-        </div>
-        <div class="hero-action">
-          <div class="orb-primary"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="ha-title">I didn't buy</div>
-          <div class="ha-sub">Log a win for today</div>
-        </div>
-        <div class="tempted-row">
-          <div class="tempted-pill">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
-            <span>Tempted? Start a pause</span>
+        <div class="goalcard">
+          <div class="gc-amount">$1,625</div>
+          <div class="gc-lbl">saved in 90 days</div>
+          <div class="chart">
+            <svg viewBox="0 0 260 150" preserveAspectRatio="none" aria-hidden="true">
+              <line class="gl" x1="30" y1="18" x2="256" y2="18"/>
+              <line class="gl" x1="30" y1="76" x2="256" y2="76"/>
+              <line class="gl" x1="30" y1="134" x2="256" y2="134"/>
+              <path class="area" d="M32,133 L58,127 L84,112 L110,101 L136,86 L162,71 L188,58 L214,42 L240,28 L240,134 L32,134 Z"/>
+              <path class="line" d="M32,133 L58,127 L84,112 L110,101 L136,86 L162,71 L188,58 L214,42 L240,28"/>
+              <circle class="dot" cx="240" cy="28" r="4"/>
+            </svg>
+            <div class="y-lbls"><span>$2,000</span><span>$1,000</span><span>$0</span></div>
+            <div class="x-lbls"><span>7</span><span>30</span><span>60</span><span>90</span></div>
           </div>
         </div>
       </div>
@@ -545,13 +585,13 @@
       <h2>A money app that<br><span class="em">never makes you feel small.</span></h2>
       <ul class="feat-list">
         <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-          <span class="ft">One tap to log a win<span class="sub">"I didn't buy" — the whole habit in a single button.</span></span></li>
+          <span class="ft">Your categories, your amounts<span class="sub">Set what a skipped coffee or a skipped order is worth — and change it any time.</span></span></li>
         <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-          <span class="ft">Watch the money pile up<span class="sub">Your saved total is the hero of the screen, not your spending.</span></span></li>
+          <span class="ft">Savings that climb on their own<span class="sub">Every marked day adds to the total. Watch it go from $0 to real money.</span></span></li>
         <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-          <span class="ft">A goal of 100 skips, not 100 rules<span class="sub">Every "no" you log moves a counter forward — progress you'll want to protect.</span></span></li>
+          <span class="ft">A year you can read at a glance<span class="sub">One square per day, per category. Three months in, your pattern is right there.</span></span></li>
         <li><span class="feat-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
-          <span class="ft">No judgment, ever<span class="sub">Bought it anyway? That's fine. Tomorrow's a clean page.</span></span></li>
+          <span class="ft">No judgment, ever<span class="sub">Bought it anyway? Mark it and move on. Tomorrow is a fresh square.</span></span></li>
       </ul>
     </div>
   </div>
@@ -577,7 +617,7 @@
         <h4>What you'll have done</h4>
         <ul class="pb-list">
           <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Saved real money toward something you actually want</li>
-          <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>Stacked up a wall of skips on the way to 100</li>
+          <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>Filled in months of squares on the way to your first 100</li>
           <li><span class="pb-ic do"><svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 8 9 8 9"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 16 9 16 9"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span>Turned "spending less" into a win you can see, not a chore</li>
         </ul>
       </div>
@@ -595,15 +635,15 @@
     <div class="doubts-grid">
       <div class="doubt reveal">
         <div class="q">Is this just another app that shames me?</div>
-        <p class="a">No. Cartless has <strong>no red numbers and no nagging</strong>. Bought something anyway? Fine. The screen celebrates what you saved, never what you spent.</p>
+        <p class="a">No. Cartless has <strong>no red numbers and no nagging</strong>. Bought something anyway? Mark it and move on. The screen shows what you saved, never what you owe.</p>
       </div>
       <div class="doubt reveal">
         <div class="q">I have zero willpower. Won't I just ignore it?</div>
-        <p class="a">It doesn't run on willpower. <strong>Walking away once does the work</strong> — log it, and if you're unsure, a 24–48h pause lets the urge fade on its own. One tap, not a personality change.</p>
+        <p class="a">It doesn't run on willpower. <strong>One tap a day is the whole habit</strong> — and once a few weeks of squares are filled in, you'll want to keep the run going. That's the part that does the work.</p>
       </div>
       <div class="doubt reveal">
         <div class="q">Will I have to track every cent?</div>
-        <p class="a">Never. <strong>No bank login, no budgets, no spreadsheets.</strong> You log a skip when it happens. That's the entire commitment.</p>
+        <p class="a">Never. <strong>No bank login, no budgets, no receipts.</strong> You set what a skip is worth once, then just mark your days. That's the entire commitment.</p>
       </div>
     </div>
   </div>
@@ -620,17 +660,17 @@
       <div class="vrow reveal">
         <div class="old"><div class="vt">Willpower &amp; "just stop"</div><div class="vs">Works until you're tired or stressed — exactly when you overspend</div></div>
         <div class="arr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-        <div class="new"><div class="vt">Walk away, then log it</div><div class="vs">One small action in the moment — and an optional 24–48h pause if you're unsure</div></div>
+        <div class="new"><div class="vt">A grid you don't want to break</div><div class="vs">Weeks of filled squares pull harder than a rule you have to remember</div></div>
       </div>
       <div class="vrow reveal">
         <div class="old"><div class="vt">Budgeting spreadsheets</div><div class="vs">Track everything, feel guilty, quit by week two</div></div>
         <div class="arr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-        <div class="new"><div class="vt">One tap when it counts</div><div class="vs">Log a skip in the moment — no admin, no spreadsheet</div></div>
+        <div class="new"><div class="vt">One tap a day</div><div class="vs">Mark the day, or mark them all at once — no receipts, no categorizing after the fact</div></div>
       </div>
       <div class="vrow reveal">
         <div class="old"><div class="vt">A strict "no-buy" challenge</div><div class="vs">All-or-nothing rules that one slip can blow up</div></div>
         <div class="arr"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
-        <div class="new"><div class="vt">A count toward 100 skips</div><div class="vs">Buy something? You just don't log it — your wins so far still stand</div></div>
+        <div class="new"><div class="vt">A grid per category</div><div class="vs">Slipped on coffee? The other categories keep their run — nothing resets to zero</div></div>
       </div>
     </div>
   </div>
@@ -641,7 +681,7 @@
   <div class="wrap reveal">
     <div class="kicker">It's live</div>
     <h2>Spend on what actually <span class="em">makes you happy.</span></h2>
-    <p class="lead">Cartless is out on the App Store. Download it free and turn your next "almost bought it" into a win you can see.</p>
+    <p class="lead">Cartless is out on the App Store. Download it free, pick your categories, and start filling in your first week of squares today.</p>
 
     <div class="cta-row">
       <a class="appstore" href="https://apps.apple.com/app/id6778073110" target="_blank" rel="noopener">
@@ -669,6 +709,19 @@
 </footer>
 
 <script>
+  // year grids: expand a compact pattern string into 364 squares (52w x 7d,
+  // column-major — same layout as the app). Chars: s = no-buy, b = bought,
+  // t = today, . or missing = unmarked/future.
+  document.querySelectorAll('.grid-year').forEach(el => {
+    const p = el.dataset.cells || '';
+    let html = '';
+    for (let i = 0; i < 364; i++) {
+      const c = p[i];
+      html += (c === 's' || c === 'b' || c === 't') ? `<i class="${c}"></i>` : '<i></i>';
+    }
+    el.innerHTML = html;
+  });
+
   // nav border on scroll
   const nav = document.getElementById('nav');
   const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
