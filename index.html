@@ -222,8 +222,23 @@
   .android-vote .av-btn { font:inherit; font-weight:400; color:var(--plum); background:none; border:0; padding:0; cursor:pointer;
     border-bottom:1px solid rgba(91,33,182,0.3); }
   .android-vote .av-btn:hover { border-bottom-color:var(--plum); }
-  .android-vote .av-done { color:var(--green); font-weight:400; }
-  .android-vote.voted .av-lead, .android-vote.voted .av-btn { display:none; }
+  .android-vote .av-done, .android-vote .av-listed { color:var(--green); font-weight:400; }
+  .android-vote .av-open { font:inherit; font-weight:400; color:var(--plum); background:none; border:0; padding:0; margin-left:4px;
+    cursor:pointer; border-bottom:1px solid rgba(91,33,182,0.3); }
+  .android-vote [hidden] { display:none !important; }
+  .av-form { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; max-width:380px; }
+  .av-form input[type=email] { flex:1 1 200px; min-width:0; font:inherit; font-size:16px; font-weight:400; color:var(--text);
+    background:#fff; border:1px solid var(--hairline); border-radius:12px; padding:10px 13px; }
+  .av-form input[type=email]:focus { outline:none; border-color:var(--plum-light); box-shadow:0 0 0 3px rgba(139,92,246,0.15); }
+  .av-form input[aria-invalid=true] { border-color:#C2410C; }
+  .av-form button { font:inherit; font-size:14.5px; font-weight:500; color:#fff; background:var(--plum); border:0; border-radius:12px;
+    padding:10px 16px; cursor:pointer; }
+  .av-form button:disabled { opacity:0.6; cursor:default; }
+  .av-form .av-fine { flex-basis:100%; font-size:12.5px; color:var(--gray-text); }
+  .av-form .av-fine a { color:inherit; }
+  .av-form .av-err { flex-basis:100%; font-size:12.5px; color:#C2410C; }
+  .av-hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+  .final .av-form { margin-left:auto; margin-right:auto; }
   .final .android-vote { margin-top:18px; }
   .faq .android-vote { margin:-8px 0 20px; }
 
@@ -460,6 +475,7 @@
     .hero-grid { grid-template-columns:1fr; gap:44px; text-align:center; }
     .hero-sub { margin-left:auto; margin-right:auto; }
     .cta-row { justify-content:center; }
+    .hero .av-form { margin-left:auto; margin-right:auto; }
     .eyebrow { margin:0 auto; }
     .showcase { grid-template-columns:1fr; gap:40px; text-align:center; }
     .feat-list { max-width:420px; margin-left:auto; margin-right:auto; text-align:left; }
@@ -520,7 +536,7 @@
           </a>
           <p class="cta-note">Free to download · iPhone</p>
         </div>
-        <div class="android-vote" data-spot="hero"><span class="av-lead">On Android?</span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted.</span></div>
+        <div class="android-vote" data-spot="hero"><span class="av-lead">On Android?</span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted. <button type="button" class="av-open">Get an email when it's ready</button></span><form class="av-form" hidden novalidate><input type="email" name="email" placeholder="you@email.com" autocomplete="email" aria-label="Email for the Android waitlist"><input type="text" name="website" class="av-hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit">Notify me</button><span class="av-fine">One email when Cartless is on Android. <a href="/privacy">Privacy</a></span><span class="av-err" hidden></span></form><span class="av-listed" hidden>You're on the Android waitlist. We'll email you when it's ready.</span></div>
       </div>
 
       <div class="phone-stage">
@@ -836,7 +852,7 @@
       <details>
         <summary>Is Cartless on Android?</summary>
         <p>Not yet. Cartless is an iPhone app for now. If you want it on Android, vote for it: every request is counted.</p>
-        <div class="android-vote" data-spot="faq"><span class="av-lead"></span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted.</span></div>
+        <div class="android-vote" data-spot="faq"><span class="av-lead"></span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted. <button type="button" class="av-open">Get an email when it's ready</button></span><form class="av-form" hidden novalidate><input type="email" name="email" placeholder="you@email.com" autocomplete="email" aria-label="Email for the Android waitlist"><input type="text" name="website" class="av-hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit">Notify me</button><span class="av-fine">One email when Cartless is on Android. <a href="/privacy">Privacy</a></span><span class="av-err" hidden></span></form><span class="av-listed" hidden>You're on the Android waitlist. We'll email you when it's ready.</span></div>
       </details>
     </div>
   </div>
@@ -855,7 +871,7 @@
         <span class="as-txt"><span class="as-small">Download on the</span><span class="as-big">App Store</span></span>
       </a>
     </div>
-    <div class="android-vote" data-spot="final"><span class="av-lead">On Android?</span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted.</span></div>
+    <div class="android-vote" data-spot="final"><span class="av-lead">On Android?</span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted. <button type="button" class="av-open">Get an email when it's ready</button></span><form class="av-form" hidden novalidate><input type="email" name="email" placeholder="you@email.com" autocomplete="email" aria-label="Email for the Android waitlist"><input type="text" name="website" class="av-hp" tabindex="-1" autocomplete="off" aria-hidden="true"><button type="submit">Notify me</button><span class="av-fine">One email when Cartless is on Android. <a href="/privacy">Privacy</a></span><span class="av-err" hidden></span></form><span class="av-listed" hidden>You're on the Android waitlist. We'll email you when it's ready.</span></div>
   </div>
 </section>
 
@@ -901,38 +917,77 @@
   }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-  // Android upvotes: one vote per browser (vote_id in localStorage = $insert_id in
-  // Mixpanel, repeats collapse). Sent only from cartlessapp.com — local previews
-  // don't pollute analytics. text/plain body = simple request, no CORS preflight.
+  // Android upvotes + optional waitlist email. One vote per browser: vote_id in
+  // localStorage = distinct_id in Mixpanel (count unique ids). Sent only from
+  // cartlessapp.com — local previews don't pollute analytics. text/plain body =
+  // simple request, no CORS preflight. Endpoint: ../mixpanel-proxy/api/landing-vote.js
   (() => {
-    const KEY = 'cartless_android_vote_id';
-    const store = {
-      get() { try { return localStorage.getItem(KEY); } catch { return null; } },
-      set(v) { try { localStorage.setItem(KEY, v); } catch {} },
-    };
-    const widgets = document.querySelectorAll('.android-vote');
-    const markVoted = () => widgets.forEach(w => {
-      w.classList.add('voted');
-      w.querySelector('.av-done').hidden = false;
-    });
-    if (store.get()) markVoted();
+    const ENDPOINT = 'https://mp.cartlessapp.com/landing-vote';
+    const K_VOTE = 'cartless_android_vote_id', K_LIST = 'cartless_android_waitlisted';
+    const get = k => { try { return localStorage.getItem(k); } catch { return null; } };
+    const set = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
     const live = /(^|\.)cartlessapp\.com$/.test(location.hostname);
-    widgets.forEach(w => w.querySelector('.av-btn').addEventListener('click', () => {
-      const id = (crypto.randomUUID && crypto.randomUUID()) ||
-        Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
-      store.set(id);
-      markVoted();
+    const EMAIL = /^[^\s@<>"]{1,64}@[^\s@<>"]{1,190}\.[A-Za-z]{2,24}$/;
+    const widgets = [...document.querySelectorAll('.android-vote')];
+
+    const send = async payload => {
+      if (!live) { console.info('[android-vote] local preview, not sent', payload); return true; }
+      try {
+        const r = await fetch(ENDPOINT, { method: 'POST', keepalive: true,
+          headers: { 'content-type': 'text/plain' }, body: JSON.stringify(payload) });
+        return r.ok;
+      } catch { return false; }
+    };
+
+    // state: '' → not voted, 'voted' → thanks (+ form if opened), 'listed' → on waitlist
+    const render = (w, open) => {
+      const st = get(K_LIST) ? 'listed' : get(K_VOTE) ? 'voted' : '';
+      w.querySelector('.av-lead').hidden = !!st;
+      w.querySelector('.av-btn').hidden = !!st;
+      w.querySelector('.av-done').hidden = st !== 'voted';
+      if (open !== undefined) w.querySelector('.av-form').hidden = !open;
+      if (st !== 'voted') w.querySelector('.av-form').hidden = true;
+      w.querySelector('.av-open').hidden = !w.querySelector('.av-form').hidden;
+      w.querySelector('.av-listed').hidden = st !== 'listed';
+    };
+    widgets.forEach(w => render(w));
+
+    widgets.forEach(w => {
       const spot = w.dataset.spot;
-      if (!live) { console.info('[android-vote] local preview, not sent', { id, spot }); return; }
-      fetch('https://mp.cartlessapp.com/landing-vote', {
-        method: 'POST', keepalive: true,
-        headers: { 'content-type': 'text/plain' },
-        body: JSON.stringify({ vote_id: id, spot, referrer: document.referrer || '' }),
-      }).catch(() => {});
-      if (window.__cfBeacon && typeof window.__cfBeacon.trackEvent === 'function') {
-        window.__cfBeacon.trackEvent('android_vote', { spot });
-      }
-    }));
+      w.querySelector('.av-btn').addEventListener('click', () => {
+        const id = (crypto.randomUUID && crypto.randomUUID()) ||
+          Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+        set(K_VOTE, id);
+        widgets.forEach(x => render(x, x === w));   // form opens where they clicked
+        send({ kind: 'vote', vote_id: id, spot, referrer: document.referrer || '' });
+        if (window.__cfBeacon && typeof window.__cfBeacon.trackEvent === 'function') {
+          window.__cfBeacon.trackEvent('android_vote', { spot });
+        }
+      });
+      w.querySelector('.av-open').addEventListener('click', () => render(w, true));
+
+      const form = w.querySelector('.av-form');
+      const input = form.querySelector('input[type=email]');
+      const err = form.querySelector('.av-err');
+      const btn = form.querySelector('button[type=submit]');
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const email = input.value.trim();
+        err.hidden = true; input.removeAttribute('aria-invalid');
+        if (!EMAIL.test(email)) {
+          input.setAttribute('aria-invalid', 'true');
+          err.textContent = 'That email doesn\'t look right.'; err.hidden = false;
+          return;
+        }
+        // honeypot: bots fill every field — pretend success, send nothing
+        const ok = form.elements.website.value ? true : (btn.disabled = true,
+          await send({ kind: 'waitlist', vote_id: get(K_VOTE), spot, email }));
+        btn.disabled = false;
+        if (!ok) { err.textContent = 'Couldn\'t save that. Please try again.'; err.hidden = false; return; }
+        set(K_LIST, '1');
+        widgets.forEach(x => render(x));
+      });
+    });
   })();
 
   // track App Store clicks as a Cloudflare custom event (view -> store-intent)

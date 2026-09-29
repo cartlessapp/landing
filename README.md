@@ -45,10 +45,13 @@ Twitter / аутрич). Объясняет оффер за 5 секунд и в
 
 Кнопка «Vote for an Android version» в hero, в FAQ и в финальном CTA. Клик →
 POST на `mp.cartlessapp.com/landing-vote` (Vercel, `../mixpanel-proxy/api/landing-vote.js`)
-→ событие `landing_android_vote` в Mixpanel через Import API. Один браузер = один
-голос (`vote_id` в localStorage = `$insert_id`). С локального просмотра и не с
-cartlessapp.com голос не отправляется, только пишется в консоль.
-Считать: `cd ../analytics && python3 mp_fetch.py` → строка «голосов за Android».
+→ событие `landing_android_vote` в Mixpanel через Import API. После голоса в том же
+блоке — необязательная почта в Android-вейтлист → `landing_android_waitlist` с `email`
+(honeypot-поле `website` против ботов). Один браузер = один голос: `vote_id` в
+localStorage = `distinct_id`, считаем уникальные. С локального просмотра и не с
+cartlessapp.com ничего не отправляется, только пишется в консоль.
+Сбор почты описан в privacy.html, раздел 3 — меняешь механику, правь и его.
+Считать: `cd ../analytics && python3 mp_fetch.py` → голоса и почты вейтлиста.
 
 ## Локальный просмотр
 
