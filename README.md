@@ -27,8 +27,10 @@ Twitter / аутрич). Объясняет оффер за 5 секунд и в
    no-buy challenge), НЕ бренды-конкуренты (память `feedback_no_defensive_competitor_framing`).
 10. **FAQ** (`#faq`) — 8 фактических вопросов: что это, для кого, no-buy challenge, не бюджет,
     не блокирует, приватность, цена, Android. Тексты 1:1 продублированы в JSON-LD `FAQPage`
-    в `<head>` (для поиска и AI-ассистентов) — меняешь ответ, меняй оба места.
+    в `<head>` (для поиска и AI-ассистентов). Правишь видимый FAQ, потом
+    `python3 scripts/sync_faq_jsonld.py` — разметка пересоберётся сама.
     Цену цифрой не пишем: SKU меняются в A/B пейволла.
+    Про блокировку: «пока нет, в будущем» (Screen Time в работе).
 11. **Final CTA / waitlist** — email-capture + App Store бейдж.
 12. **Footer** — Privacy / Terms (внешние ссылки на `cartless-legal` GitHub Pages).
 
@@ -38,6 +40,15 @@ Twitter / аутрич). Объясняет оффер за 5 секунд и в
 `<link rel="canonical">`. Ссылки на App Store — только канонический URL
 `apps.apple.com/us/app/cartless-no-buy-tracker/id6778073110` (без редиректа).
 Зачем и замеры — `../research/ai-visibility.md`.
+
+## Голос за Android
+
+Кнопка «Vote for an Android version» в hero, в FAQ и в финальном CTA. Клик →
+POST на `mp.cartlessapp.com/landing-vote` (Vercel, `../mixpanel-proxy/api/landing-vote.js`)
+→ событие `landing_android_vote` в Mixpanel через Import API. Один браузер = один
+голос (`vote_id` в localStorage = `$insert_id`). С локального просмотра и не с
+cartlessapp.com голос не отправляется, только пишется в консоль.
+Считать: `cd ../analytics && python3 mp_fetch.py` → строка «голосов за Android».
 
 ## Локальный просмотр
 

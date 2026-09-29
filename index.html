@@ -84,7 +84,7 @@
       "name": "Does Cartless block shopping apps or websites?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. Cartless doesn't block apps, stores or checkout. It makes the days you skip visible, so the grid and the growing savings become the reason to pass."
+        "text": "Not yet. Today Cartless doesn't block apps, stores or checkout: it makes the days you skip visible, so the grid and the growing savings become the reason to pass. Blocking shopping apps is coming in a future update."
       }
     },
     {
@@ -108,7 +108,7 @@
       "name": "Is Cartless on Android?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. Cartless is an iPhone app, available on the App Store."
+        "text": "Not yet. Cartless is an iPhone app for now. If you want it on Android, vote for it: every request is counted."
       }
     }
   ]
@@ -216,6 +216,16 @@
   .appstore .as-big { font-size:18px; font-weight:500; letter-spacing:-0.01em; }
   .cta-note { font-size:13.5px; color:var(--gray-text); font-weight:300; }
   .cta-note a { color:var(--plum); text-decoration:none; border-bottom:1px solid rgba(91,33,182,0.3); }
+
+  /* Голос за Android: кнопка-ссылка → «спасибо». Шлёт на mp.cartlessapp.com/landing-vote */
+  .android-vote { margin-top:14px; font-size:13.5px; color:var(--gray-text); font-weight:300; }
+  .android-vote .av-btn { font:inherit; font-weight:400; color:var(--plum); background:none; border:0; padding:0; cursor:pointer;
+    border-bottom:1px solid rgba(91,33,182,0.3); }
+  .android-vote .av-btn:hover { border-bottom-color:var(--plum); }
+  .android-vote .av-done { color:var(--green); font-weight:400; }
+  .android-vote.voted .av-lead, .android-vote.voted .av-btn { display:none; }
+  .final .android-vote { margin-top:18px; }
+  .faq .android-vote { margin:-8px 0 20px; }
 
   /* ============ phone mockup ============ */
   .phone-stage { display:flex; justify-content:center; position:relative; }
@@ -510,6 +520,7 @@
           </a>
           <p class="cta-note">Free to download · iPhone</p>
         </div>
+        <div class="android-vote" data-spot="hero"><span class="av-lead">On Android?</span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted.</span></div>
       </div>
 
       <div class="phone-stage">
@@ -812,7 +823,7 @@
       </details>
       <details>
         <summary>Does Cartless block shopping apps or websites?</summary>
-        <p>No. Cartless doesn't block apps, stores or checkout. It makes the days you skip visible, so the grid and the growing savings become the reason to pass.</p>
+        <p>Not yet. Today Cartless doesn't block apps, stores or checkout: it makes the days you skip visible, so the grid and the growing savings become the reason to pass. Blocking shopping apps is coming in a future update.</p>
       </details>
       <details>
         <summary>Does Cartless see my bank account or purchases?</summary>
@@ -824,7 +835,8 @@
       </details>
       <details>
         <summary>Is Cartless on Android?</summary>
-        <p>No. Cartless is an iPhone app, available on the App Store.</p>
+        <p>Not yet. Cartless is an iPhone app for now. If you want it on Android, vote for it: every request is counted.</p>
+        <div class="android-vote" data-spot="faq"><span class="av-lead"></span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted.</span></div>
       </details>
     </div>
   </div>
@@ -843,6 +855,7 @@
         <span class="as-txt"><span class="as-small">Download on the</span><span class="as-big">App Store</span></span>
       </a>
     </div>
+    <div class="android-vote" data-spot="final"><span class="av-lead">On Android?</span> <button type="button" class="av-btn">Vote for an Android version</button><span class="av-done" hidden>Thanks, your vote is counted.</span></div>
   </div>
 </section>
 
@@ -887,6 +900,40 @@
     entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
   }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Android upvotes: one vote per browser (vote_id in localStorage = $insert_id in
+  // Mixpanel, repeats collapse). Sent only from cartlessapp.com — local previews
+  // don't pollute analytics. text/plain body = simple request, no CORS preflight.
+  (() => {
+    const KEY = 'cartless_android_vote_id';
+    const store = {
+      get() { try { return localStorage.getItem(KEY); } catch { return null; } },
+      set(v) { try { localStorage.setItem(KEY, v); } catch {} },
+    };
+    const widgets = document.querySelectorAll('.android-vote');
+    const markVoted = () => widgets.forEach(w => {
+      w.classList.add('voted');
+      w.querySelector('.av-done').hidden = false;
+    });
+    if (store.get()) markVoted();
+    const live = /(^|\.)cartlessapp\.com$/.test(location.hostname);
+    widgets.forEach(w => w.querySelector('.av-btn').addEventListener('click', () => {
+      const id = (crypto.randomUUID && crypto.randomUUID()) ||
+        Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+      store.set(id);
+      markVoted();
+      const spot = w.dataset.spot;
+      if (!live) { console.info('[android-vote] local preview, not sent', { id, spot }); return; }
+      fetch('https://mp.cartlessapp.com/landing-vote', {
+        method: 'POST', keepalive: true,
+        headers: { 'content-type': 'text/plain' },
+        body: JSON.stringify({ vote_id: id, spot, referrer: document.referrer || '' }),
+      }).catch(() => {});
+      if (window.__cfBeacon && typeof window.__cfBeacon.trackEvent === 'function') {
+        window.__cfBeacon.trackEvent('android_vote', { spot });
+      }
+    }));
+  })();
 
   // track App Store clicks as a Cloudflare custom event (view -> store-intent)
   document.querySelectorAll('a[href*="apps.apple.com"]').forEach((el, i) => {
