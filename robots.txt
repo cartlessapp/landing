@@ -1,0 +1,6 @@
+# Всё открыто: лендинг должен читаться и поисковиками, и AI-ассистентами
+# (Googlebot, Bingbot, OAI-SearchBot, PerplexityBot, ClaudeBot и т.д.)
+User-agent: *
+Allow: /
+
+Sitemap: https://cartlessapp.com/sitemap.xml

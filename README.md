@@ -25,8 +25,19 @@ Twitter / аутрич). Объясняет оффер за 5 секунд и в
 8. **Honest questions** — снятие 3 барьеров (shame / willpower / tracking).
 9. **Why this, not the usual fixes** — «увольняем» СТАРЫЕ СПОСОБЫ (сила воли / таблицы /
    no-buy challenge), НЕ бренды-конкуренты (память `feedback_no_defensive_competitor_framing`).
-10. **Final CTA / waitlist** — email-capture + App Store бейдж.
-11. **Footer** — Privacy / Terms (внешние ссылки на `cartless-legal` GitHub Pages).
+10. **FAQ** (`#faq`) — 8 фактических вопросов: что это, для кого, no-buy challenge, не бюджет,
+    не блокирует, приватность, цена, Android. Тексты 1:1 продублированы в JSON-LD `FAQPage`
+    в `<head>` (для поиска и AI-ассистентов) — меняешь ответ, меняй оба места.
+    Цену цифрой не пишем: SKU меняются в A/B пейволла.
+11. **Final CTA / waitlist** — email-capture + App Store бейдж.
+12. **Footer** — Privacy / Terms (внешние ссылки на `cartless-legal` GitHub Pages).
+
+## SEO / AI-видимость
+
+`robots.txt` (всё открыто) + `sitemap.xml` + JSON-LD `MobileApplication` и `FAQPage` +
+`<link rel="canonical">`. Ссылки на App Store — только канонический URL
+`apps.apple.com/us/app/cartless-no-buy-tracker/id6778073110` (без редиректа).
+Зачем и замеры — `../research/ai-visibility.md`.
 
 ## Локальный просмотр
 
